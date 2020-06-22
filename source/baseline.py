@@ -73,7 +73,7 @@ CategoricalIndex([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0], categories=[1.0,
 
 df['webpage_text'].dropna(inplace=True)
 df['webpage_text'] = df['webpage_text'].apply(lambda x: preprocess(x))
-print(df.head())
+#print(df.head())
 '''
               business_id  ...                                       webpage_text
 0  f9NumwFMBDn751xgFiRbNA  ...  [shooting, ranges, gun, rental, charlotte, nc,...
