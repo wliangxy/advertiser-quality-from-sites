@@ -1,6 +1,7 @@
+import os
+import datetime
 import numpy as np
 import json
-import os
 import pandas as pd
 from bs4 import BeautifulSoup
 from bs4 import Comment
@@ -44,6 +45,8 @@ Data columns (total 14 columns):
 dtypes: float64(3), int64(2), object(9)
 memory usage: 22.4+ MB
 '''
+
+#print(set(df['stars']))
 
 with open(os.path.join('..','..','yelp_data','saved_links.txt'), 'r') as file:
   s = file.read()
@@ -129,12 +132,15 @@ def visible_tags(item):
   return not item.parent.name in {'meta', 'head', 'script', 'style', '[document]'} and not isinstance(item, Comment)
 
 is_eng = []
+webpage_text = []
 max_text_size = 20 # maximum size for language detection
+
 
 for url in df['url']:
   is_eng.append(False)
+  webpage_text.append(None)
   try:
-    page = requests.get(url, stream=True, allow_redirects=False, headers={'Connection': 'close'}, timeout=1.0)
+    page = requests.get(url, stream=True, timeout=10.0)
     page.encoding = 'utf-8' 
   except:
     continue
@@ -148,8 +154,42 @@ for url in df['url']:
     for i in range(min(2, len(langs))):
       if langs[i].lang == 'en':
         is_eng[-1] = True
+        webpage_text[-1] = visible_texts
   except:
     pass
 
-print(n, sum(is_eng))
+df['is_eng'] = is_eng
+df['webpage_text'] = webpage_text
 
+#dt = str(datetime.datetime.now())
+#dt = dt[:dt.find('.')].replace(' ', '_').replace(':','-')i
+#file_name = 'business_{}.csv'.format(dt)
+file_name = 'business.csv'
+
+folder_path = os.path.join('..', '..', 'yelp_data', 'updated')
+if not os.path.exists(folder_path):
+  os.makedirs(folder_path)
+file_path = os.path.join(folder_path, file_name)
+
+
+df.to_csv(file_path, index=False, header=True)
+print('Check out{}'.format(str(file_path)))
+
+#pd.set_option('display.max_columns', None)
+#df2 = pd.read_csv(file_path)
+#print(df2.head())
+'''
+                                                 url  is_eng  \
+0               http://www.therangeatlakenorman.com/    True   
+1                              http://www.felinus.ca   False   
+2                   https://www.usemyguyservices.com    True   
+3                         http://oasisautocenter.net    True   
+4  http://junctiontire.net/tires-auto-repair-mesa-az    True   
+
+                                        webpage_text  
+0   Shooting Ranges, Gun Rental Charlotte NC | Th...  
+1                                                NaN  
+2   Home Renovations and Repairs Phoenix, AZ | Ho...  
+3   Home - Oasis Auto CenterOasis Auto Center    ...  
+4   Contact Junction Tire | Tires & Auto Repair S...  
+'''
